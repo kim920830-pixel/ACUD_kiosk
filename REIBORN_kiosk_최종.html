@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>RE:IBORN — 나의 향 진단</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#0C1810}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#E2D9C4;touch-action:manipulation}
+:root{
+  --gold:#C8A25A;--gold2:#A87840;--gdim:rgba(200,162,90,.13);
+  --cr:#E2D9C4;--cr2:#B8A88A;--cr3:#7A6A54;
+  --bg:#0C1810;--bg3:#162018;--bg4:#1A2418;
+  --brd:rgba(200,162,90,.18);--brd2:rgba(200,162,90,.08);
+  --A:#2A9970;--Abg:rgba(42,153,112,.15);
+  --B:#C44870;--Bbg:rgba(196,72,112,.15);
+  --C:#9B6830;--Cbg:rgba(155,104,48,.15);
+  --D:#C88018;--Dbg:rgba(200,128,24,.15);
+  --E:#5A9020;--Ebg:rgba(90,144,32,.15);
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes glow{0%,100%{box-shadow:0 0 28px rgba(200,162,90,.14)}50%{box-shadow:0 0 55px rgba(200,162,90,.42)}}
+@keyframes cardPop{0%{transform:scale(.97);opacity:.7}60%{transform:scale(1.02)}100%{transform:scale(1);opacity:1}}
+@keyframes slideNext{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+@keyframes slideResult{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#2A3A2A;border-radius:2px}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid var(--bg);box-shadow:0 2px 10px rgba(0,0,0,.6)}
+
+#app{height:100vh;overflow:hidden;position:relative}
+.screen{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.screen.hidden{display:none!important}
+
+/* ── 버튼 ── */
+.btn-g{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0C1810;border:none;font-family:inherit;font-size:1rem;letter-spacing:.07em;padding:18px;cursor:pointer;border-radius:2px;font-weight:500;box-shadow:0 6px 28px rgba(200,162,90,.3);transition:transform .1s;user-select:none;width:100%}
+.btn-g:active{transform:scale(.97)}
+.btn-gr{background:linear-gradient(135deg,#2A9970,#1A7050);color:#fff;border:none;font-family:inherit;font-size:1rem;letter-spacing:.07em;padding:18px;cursor:pointer;border-radius:2px;font-weight:500;box-shadow:0 6px 28px rgba(42,153,112,.28);transition:transform .1s;user-select:none;width:100%}
+.btn-gr:active{transform:scale(.97)}
+.btn-gh{background:none;border:1px solid var(--brd);color:var(--cr2);font-family:inherit;font-size:.85rem;padding:11px 18px;cursor:pointer;border-radius:2px;transition:all .12s;user-select:none}
+.btn-gh:active{background:var(--gdim);border-color:var(--gold)}
+.btn-dim{background:var(--bg4);border:1px solid var(--brd2);color:var(--cr3);font-family:inherit;font-size:1rem;padding:18px;border-radius:2px;width:100%;cursor:not-allowed}
+.bot{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:.85rem 1.4rem 1.3rem;background:linear-gradient(to top,#0C1810 62%,transparent)}
+
+/* ── LANDING ── */
+#s-land{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:3rem 2rem;text-align:center;position:relative;animation:fadeUp .5s ease both}
+.ring{position:absolute;border-radius:50%;border:1px solid rgba(200,162,90,.055);pointer-events:none;top:50%;left:50%;transform:translate(-50%,-50%)}
+.brand-tag{font-size:10px;letter-spacing:.28em;color:#4A7A4A;text-transform:uppercase;margin-bottom:22px}
+.l-title{font-size:clamp(2.2rem,6vw,3.8rem);font-weight:300;line-height:1.18;color:var(--cr);margin-bottom:16px;letter-spacing:-.01em}
+.l-title em{color:var(--gold);font-style:italic}
+.l-sub{font-size:.98rem;color:var(--cr3);line-height:1.9;max-width:420px;margin-bottom:50px}
+.l-flow{display:flex;align-items:center;gap:0;margin-top:42px;opacity:.45}
+.lf-item{text-align:center;padding:0 16px}
+.lf-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);margin:0 auto 7px;opacity:.55}
+.lf-label{font-size:10px;letter-spacing:.1em;color:#7A8A7A}
+.lf-sep{width:24px;height:1px;background:rgba(200,162,90,.2);margin-bottom:18px}
+
+/* ══════════════════════
+   QUIZ SCREEN
+══════════════════════ */
+#s-quiz{animation:fadeUp .4s ease both}
+.quiz-header{padding:1.3rem 1.4rem .8rem;position:sticky;top:0;z-index:20;background:linear-gradient(180deg,var(--bg) 72%,transparent)}
+/* 진행 도트 */
+.q-dots{display:flex;gap:5px;margin-bottom:1.1rem;align-items:center}
+.q-dot{width:7px;height:7px;border-radius:50%;transition:all .3s}
+.q-dot.done{background:var(--gold);transform:scale(1)}
+.q-dot.now{background:var(--gold);transform:scale(1.4);box-shadow:0 0 8px rgba(200,162,90,.6)}
+.q-dot.idle{background:rgba(200,162,90,.15)}
+/* 질문 헤더 */
+.q-nav{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.q-num{font-size:10px;letter-spacing:.2em;color:#5A8A5A;text-transform:uppercase}
+.q-title{font-size:clamp(1.35rem,3.5vw,1.9rem);font-weight:300;color:var(--cr);line-height:1.25;margin-bottom:5px}
+.q-hint{font-size:.85rem;color:var(--cr3)}
+
+/* 선택 카드 래퍼 */
+.choice-wrap{padding:0 1.4rem 8rem}
+
+/* A/B 이진 카드 — 메인 타입 */
+.ab-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ab-card{background:var(--bg3);border:1.5px solid var(--brd2);border-radius:8px;padding:22px 16px;cursor:pointer;text-align:center;transition:all .15s;user-select:none;animation:cardPop .3s ease both;position:relative;overflow:hidden}
+.ab-card:active{transform:scale(.95)}
+.ab-card.picked{border-width:2px;animation:cardPop .25s ease both}
+.ab-card .ab-icon{font-size:38px;margin-bottom:12px;display:block}
+.ab-card .ab-kw{font-size:16px;font-weight:400;margin-bottom:6px;transition:color .15s}
+.ab-card .ab-desc{font-size:12px;color:var(--cr3);line-height:1.55}
+.ab-card .ab-ex{font-size:10px;color:var(--cr3);margin-top:8px;padding-top:8px;border-top:1px solid var(--brd2);letter-spacing:.04em}
+.ab-card.picked .ab-check{display:flex}
+.ab-check{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#0C1810;display:none}
+
+/* 4지 선택 카드 */
+.quad-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.q4-card{background:var(--bg3);border:1.5px solid var(--brd2);border-radius:8px;padding:18px 14px;cursor:pointer;transition:all .15s;user-select:none;position:relative;overflow:hidden;animation:cardPop .3s ease both}
+.q4-card:active{transform:scale(.95)}
+.q4-card.picked{border-width:2px}
+.q4-card .q4-icon{font-size:28px;margin-bottom:10px}
+.q4-card .q4-kw{font-size:14px;font-weight:400;margin-bottom:4px}
+.q4-card .q4-desc{font-size:11px;color:var(--cr3);line-height:1.4}
+.q4-card.picked .ab-check{display:flex}
+
+/* 슬라이더 스케일 */
+.scale-wrap{padding:0 1.4rem}
+.scale-labels{display:flex;justify-content:space-between;margin-bottom:12px}
+.scale-label{font-size:13px;color:var(--cr2)}
+.scale-track{position:relative;padding:8px 0}
+.scale-bar{height:4px;border-radius:2px;background:rgba(200,162,90,.15);position:relative;overflow:visible}
+.scale-nodes{display:flex;justify-content:space-between;position:absolute;inset:0;align-items:center}
+.s-node{width:14px;height:14px;border-radius:50%;background:var(--bg3);border:1.5px solid rgba(200,162,90,.3);cursor:pointer;transition:all .15s;flex-shrink:0;user-select:none}
+.s-node:active{transform:scale(.85)}
+.s-node.on{background:var(--gold);border-color:var(--gold);transform:scale(1.2)}
+.scale-desc{text-align:center;font-size:13px;color:var(--cr2);margin-top:14px;min-height:20px;transition:opacity .2s}
+
+/* 소재 비율 (Step 1B) */
+.mat-ratio-wrap{padding:0 1.4rem 8rem}
+.ratio-header{font-size:11px;letter-spacing:.15em;color:#5A8A5A;text-transform:uppercase;margin-bottom:14px}
+.selected-mats{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.sel-mat-tag{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:40px;font-size:13px;border:1px solid;background:transparent;cursor:default}
+.ratio-item{margin-bottom:20px;padding:16px;background:var(--bg3);border-radius:6px;border:1px solid var(--brd2)}
+.ri-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.ri-left{display:flex;align-items:center;gap:8px}
+.ri-icon{font-size:20px}
+.ri-name{font-size:14px;color:var(--cr)}
+.ri-pct{font-size:20px;font-weight:300}
+.ri-sum{display:flex;align-items:center;gap:4px;margin-bottom:16px;padding:10px 14px;border-radius:4px;font-size:12px}
+.ri-sum.ok{background:rgba(42,153,112,.12);color:var(--A)}
+.ri-sum.no{background:rgba(200,162,90,.1);color:var(--gold)}
+.ratio-stack{height:10px;border-radius:5px;overflow:hidden;display:flex;margin-bottom:4px}
+.rst-seg{transition:flex .2s}
+
+/* ── RESULT ── */
+#s-res{animation:slideResult .45s ease both}
+.res-hd{padding:1.3rem 1.4rem .9rem;border-bottom:1px solid var(--brd2);position:sticky;top:0;z-index:20;background:var(--bg)}
+.res-top-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.res-fam-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.res-tag-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.res-tag{font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid var(--brd);color:var(--cr3)}
+.score-row{display:flex;gap:3px;margin-top:9px;height:3px}
+.sc-bar{border-radius:2px}
+.res-tabs{display:flex;border-bottom:1px solid var(--brd2);position:sticky;top:0;z-index:19;background:var(--bg)}
+.r-tab{flex:1;padding:12px;font-size:13.5px;letter-spacing:.04em;background:none;border:none;color:var(--cr3);cursor:pointer;border-bottom:2px solid transparent;transition:all .13s;font-family:inherit}
+.r-tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+.note-sec{padding:.9rem 1.4rem;border-bottom:1px solid var(--brd2)}
+.note-hd{font-size:10px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:9px;padding-bottom:5px}
+.note-hd.top{color:#5AACCF;border-bottom:1px solid rgba(90,172,207,.18)}
+.note-hd.mid{color:#5AAA7A;border-bottom:1px solid rgba(90,170,122,.18)}
+.note-hd.base{color:#D4901A;border-bottom:1px solid rgba(212,144,26,.18)}
+.fc-row{display:flex;flex-wrap:wrap;gap:7px}
+.fc{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:40px;cursor:pointer;background:var(--bg3);border:1px solid var(--brd2);transition:all .13s;position:relative;user-select:none}
+.fc:active{transform:scale(.94)}
+.fc.on{border-width:1.5px}
+.rec-dot{position:absolute;top:-3px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--gold);display:none}
+.fc.rec .rec-dot{display:block}
+.fc.on .rec-dot{display:none}
+.fn{font-size:13px}
+.fd{font-size:10px;color:var(--cr3)}
+.bl-hd{padding:.9rem 1.4rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--brd2)}
+.bl-total{font-size:2rem;font-weight:300}
+.bl-stack{height:10px;border-radius:5px;overflow:hidden;display:flex;margin:.6rem 1.4rem}
+.bl-item{padding:13px 1.4rem;border-bottom:1px solid var(--brd2)}
+.bl-it-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px}
+.bl-name{font-size:16px;color:var(--cr);margin-bottom:5px}
+.bl-meta{display:flex;gap:5px}
+.fam-mini{font-size:10px;padding:2px 8px;border-radius:10px}
+.ctrl{display:flex;align-items:center;gap:6px}
+.ctrl-btn{width:34px;height:34px;border-radius:50%;background:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;transition:all .1s;user-select:none;border:1px solid;line-height:1}
+.ctrl-btn:active{transform:scale(.88);background:var(--gdim)}
+.pct{width:56px;text-align:center;font-size:22px;font-weight:300}
+.bl-note{font-size:10px;color:var(--cr3);margin-top:6px}
+.bl-sp{height:7rem}
+
+/* ── DONE ── */
+#s-done{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:3rem 2rem;text-align:center;animation:fadeUp .4s ease both}
+.done-ring{width:110px;height:110px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:44px;margin-bottom:26px;animation:glow 2.2s ease infinite}
+.done-title{font-size:1.9rem;font-weight:300;margin-bottom:10px}
+.done-sub{font-size:.95rem;color:var(--cr3);line-height:1.85;max-width:360px;margin-bottom:28px}
+.recipe-card{background:var(--bg3);border:1px solid var(--brd);border-radius:4px;padding:18px 22px;max-width:400px;width:100%;margin-bottom:28px;text-align:left;animation:scaleIn .4s ease both}
+@keyframes scaleIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+.rc-title{font-size:10px;letter-spacing:.18em;color:var(--gold);margin-bottom:12px;text-transform:uppercase}
+.rc-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--brd2)}
+.rc-row:last-child{border-bottom:none}
+.rc-name{font-size:13px}
+.rc-pct{font-size:16px;font-weight:400}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ LANDING ══ -->
+<div id="s-land" class="screen">
+  <div class="ring" style="width:680px;height:680px"></div>
+  <div class="ring" style="width:460px;height:460px"></div>
+  <div class="ring" style="width:265px;height:265px"></div>
+  <div class="brand-tag">RE:IBORN by ACUD &nbsp;·&nbsp; 2026 Living Expo</div>
+  <h1 class="l-title">나의 공간을 위한<br><em>단 하나의 향</em></h1>
+  <p class="l-sub">8가지 질문으로 공간의 성격을 파악하고<br>30가지 향료 중 나에게 맞는 배합을 찾아드립니다</p>
+  <button class="btn-g" onclick="goTo('s-quiz');startQuiz()" style="max-width:320px;font-size:1.05rem;padding:20px">향 진단 시작하기</button>
+  <div class="l-flow">
+    <div class="lf-item"><div class="lf-dot"></div><div class="lf-label">8가지 질문</div></div>
+    <div class="lf-sep"></div>
+    <div class="lf-item"><div class="lf-dot"></div><div class="lf-label">향료 추천</div></div>
+    <div class="lf-sep"></div>
+    <div class="lf-item"><div class="lf-dot"></div><div class="lf-label">배합비 조정</div></div>
+  </div>
+</div>
+
+<!-- ══ QUIZ ══ -->
+<div id="s-quiz" class="screen hidden">
+  <div class="quiz-header">
+    <div class="q-dots" id="q-dots"></div>
+    <div class="q-nav">
+      <button class="btn-gh" id="q-back" onclick="prevQ()" style="padding:8px 14px;font-size:12px">← 이전</button>
+      <div>
+        <div class="q-num" id="q-num"></div>
+        <div class="q-title" id="q-title"></div>
+        <div class="q-hint" id="q-hint"></div>
+      </div>
+    </div>
+  </div>
+  <div class="choice-wrap" id="choice-wrap"></div>
+  <div class="bot"><button id="q-next" class="btn-dim" onclick="nextQ()">선택해주세요</button></div>
+</div>
+
+<!-- ══ RESULT ══ -->
+<div id="s-res" class="screen hidden">
+  <div class="res-hd">
+    <div class="res-top-row">
+      <div>
+        <div style="font-size:10px;letter-spacing:.2em;color:#5A8A5A;text-transform:uppercase;margin-bottom:5px">나의 향 레시피</div>
+        <div class="res-fam-row" id="res-fams"></div>
+      </div>
+      <button class="btn-gh" onclick="reset()" style="padding:8px 14px;font-size:12px;flex-shrink:0">처음부터</button>
+    </div>
+    <div class="res-tag-row" id="res-tags"></div>
+    <div class="score-row" id="score-row"></div>
+  </div>
+  <div class="res-tabs">
+    <button class="r-tab on" id="tab-pick" onclick="switchTab('pick')">향료 선택 <span id="pick-cnt">(0/6)</span></button>
+    <button class="r-tab" id="tab-blend" onclick="switchTab('blend')">배합비 조정 <span id="blend-tot-tab">0%</span></button>
+  </div>
+  <div id="panel-pick"></div>
+  <div id="panel-blend" style="display:none"></div>
+  <div class="bot" id="res-bot"></div>
+</div>
+
+<!-- ══ DONE ══ -->
+<div id="s-done" class="screen hidden">
+  <div class="done-ring" id="done-ring">✓</div>
+  <h2 class="done-title">레시피 완성!</h2>
+  <p class="done-sub">직원에게 이 화면을 보여주세요.<br>나만의 배합 향료로 제작해 드립니다 ✦</p>
+  <div class="recipe-card" id="done-recipe"></div>
+
+  <!-- 이메일 전송 영역 -->
+  <div id="email-section" style="max-width:400px;width:100%;margin-bottom:20px">
+    <div style="font-size:11px;letter-spacing:.15em;color:#5A8A5A;text-transform:uppercase;margin-bottom:10px">레시피를 이메일로 받아보기</div>
+    <div style="display:flex;gap:8px">
+      <input id="user-email" type="email" placeholder="이메일 주소 입력" style="flex:1;padding:14px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(200,162,90,.25);border-radius:2px;color:#E2D9C4;font-family:inherit;font-size:14px;outline:none">
+      <button onclick="sendEmail()" id="send-btn" style="padding:14px 18px;background:linear-gradient(135deg,#C8A25A,#A87840);color:#0C1810;border:none;border-radius:2px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;white-space:nowrap">전송</button>
+    </div>
+    <div id="email-status" style="font-size:12px;margin-top:8px;min-height:18px;text-align:center"></div>
+  </div>
+
+  <button class="btn-g" onclick="reset()" style="max-width:400px;padding:16px">새로 시작하기</button>
+</div>
+
+</div><!-- /app -->
+<script>
+// ════════════════════════════════════════
+// 데이터
+// ════════════════════════════════════════
+const FAM = {
+  fresh: {l:'프레쉬', c:'#2A9970', bg:'rgba(42,153,112,.14)',  e:'🍃'},
+  floral:{l:'플로럴', c:'#C44870', bg:'rgba(196,72,112,.14)',   e:'🌸'},
+  woody: {l:'우디',   c:'#9B6830', bg:'rgba(155,104,48,.14)',   e:'🌲'},
+  amber: {l:'앰버',   c:'#C88018', bg:'rgba(200,128,24,.14)',   e:'🪵'},
+  green: {l:'그린',   c:'#5A9020', bg:'rgba(90,144,32,.14)',    e:'🌿'},
+};
+const NOTE_L = {top:'탑 노트 — 처음 15분', mid:'미들 노트 — 3~4시간', base:'베이스 노트 — 잔향'};
+
+const FRAGS = [
+  {id:1, n:'레몬',      f:'fresh', nt:'top',  d:'활기 · 집중'},
+  {id:2, n:'베르가못',  f:'fresh', nt:'top',  d:'우아한 시트러스'},
+  {id:3, n:'민트',      f:'fresh', nt:'top',  d:'쿨링 · 각성'},
+  {id:4, n:'그린티',    f:'fresh', nt:'mid',  d:'차분한 그린'},
+  {id:5, n:'라임',      f:'fresh', nt:'top',  d:'청량한 탄산감'},
+  {id:6, n:'오이',      f:'fresh', nt:'top',  d:'청결 · 수분'},
+  {id:7, n:'로즈',      f:'floral',nt:'mid',  d:'로맨스의 여왕'},
+  {id:8, n:'라벤더',    f:'floral',nt:'mid',  d:'이완 · 수면'},
+  {id:9, n:'재스민',    f:'floral',nt:'mid',  d:'달콤한 안정감'},
+  {id:10,n:'피오니',    f:'floral',nt:'mid',  d:'봄날의 설렘'},
+  {id:11,n:'체리블러썸',f:'floral',nt:'top',  d:'연분홍 봄바람'},
+  {id:12,n:'라일락',    f:'floral',nt:'top',  d:'청순한 봄향'},
+  {id:13,n:'삼나무',    f:'woody', nt:'base', d:'깊은 숲 안정감'},
+  {id:14,n:'샌달우드',  f:'woody', nt:'base', d:'크리미 · 고급'},
+  {id:15,n:'히노키',    f:'woody', nt:'mid',  d:'일본 삼림욕'},
+  {id:16,n:'파인',      f:'woody', nt:'mid',  d:'솔잎 · 자연'},
+  {id:17,n:'베티버',    f:'woody', nt:'base', d:'흙 · 그라운딩'},
+  {id:18,n:'시더',      f:'woody', nt:'base', d:'포근한 우디'},
+  {id:19,n:'바닐라',    f:'amber', nt:'base', d:'달콤한 포근함'},
+  {id:20,n:'통카빈',    f:'amber', nt:'base', d:'아몬드 · 따뜻'},
+  {id:21,n:'앰버',      f:'amber', nt:'base', d:'관능적 깊이'},
+  {id:22,n:'머스크',    f:'amber', nt:'base', d:'클린 · 관능'},
+  {id:23,n:'인센스',    f:'amber', nt:'mid',  d:'명상 · 신성'},
+  {id:24,n:'침향',      f:'amber', nt:'base', d:'신비 · 최고급'},
+  {id:25,n:'파촐리',    f:'woody', nt:'base', d:'어스 · 개성'},
+  {id:26,n:'아이리스',  f:'floral',nt:'mid',  d:'파우더리 우아함'},
+  {id:27,n:'오크모스',  f:'woody', nt:'base', d:'이끼 · 빈티지'},
+  {id:28,n:'벤조인',    f:'amber', nt:'base', d:'발사믹 온기'},
+  {id:29,n:'시트러스',  f:'fresh', nt:'top',  d:'밝은 에너지'},
+  {id:30,n:'바이올렛',  f:'floral',nt:'mid',  d:'파우더 · 향수'},
+];
+
+// ════════════════════════════════════════
+// 질문 정의
+// 각 선택지 → {fresh, floral, woody, amber, green} 점수 부여
+// ════════════════════════════════════════
+const QUESTIONS = [
+  {
+    id:'q1', type:'ab',
+    title: '공간의 바닥은 어떤 느낌인가요?',
+    hint: '발바닥으로 느껴지는 소재감',
+    A: { icon:'🪵', kw:'자연스러운 원목·카펫', desc:'나무결이나 패브릭의 따뜻한 온기', ex:'원목 마루 · 합판 · 카펫 · 코르크',
+         score:{fresh:0, floral:1, woody:4, amber:3, green:2} },
+    B: { icon:'⬜', kw:'매끄러운 타일·콘크리트', desc:'차갑고 깔끔한 미네랄 질감', ex:'타일 · 콘크리트 · 폴리싱 · 마블',
+         score:{fresh:4, floral:1, woody:1, amber:1, green:3} },
+  },
+  {
+    id:'q2', type:'ab',
+    title: '벽면과 천장의 분위기는?',
+    hint: '공간을 감싸는 배경의 느낌',
+    A: { icon:'🤍', kw:'밝고 가벼운 공간', desc:'화이트·아이보리·밝은 파스텔이 주를 이룸', ex:'화이트 페인트 · 밝은 벽지 · 유리벽',
+         score:{fresh:3, floral:4, woody:0, amber:1, green:2} },
+    B: { icon:'🖤', kw:'어둡고 깊이있는 공간', desc:'그레이·다크·우드컬러 계열이 주를 이룸', ex:'짙은 페인트 · 노출 벽돌 · 다크 패널',
+         score:{fresh:0, floral:0, woody:4, amber:4, green:1} },
+  },
+  {
+    id:'q3', type:'quad',
+    title: '가구와 소품의 주된 소재는?',
+    hint: '손이 가장 많이 닿는 가구의 재질',
+    choices: [
+      { icon:'🧶', kw:'패브릭 · 린넨', desc:'소파·쿠션·커튼의 부드러운 천',
+        score:{fresh:0, floral:4, woody:1, amber:3, green:1} },
+      { icon:'🪵', kw:'목재 · 라탄', desc:'원목 테이블·선반·의자',
+        score:{fresh:1, floral:1, woody:5, amber:2, green:3} },
+      { icon:'✨', kw:'금속 · 유리', desc:'메탈 프레임·유리 테이블·거울',
+        score:{fresh:4, floral:2, woody:0, amber:0, green:3} },
+      { icon:'🛋', kw:'가죽 · 대리석', desc:'가죽 소파·대리석 선반·석재',
+        score:{fresh:0, floral:1, woody:2, amber:5, green:0} },
+    ]
+  },
+  {
+    id:'q4', type:'ab',
+    title: '공간에 들어섰을 때 첫 느낌은?',
+    hint: '전체적인 공간의 온도감',
+    A: { icon:'☀️', kw:'따뜻하고 아늑한', desc:'온기가 느껴지고 편안하게 머물고 싶은', ex:'골드·베이지·브라운·우드 톤',
+         score:{fresh:0, floral:2, woody:3, amber:4, green:1} },
+    B: { icon:'🌊', kw:'시원하고 청량한', desc:'공기가 맑고 상쾌하며 집중이 잘 되는', ex:'화이트·그레이·블루·그린 톤',
+         score:{fresh:4, floral:1, woody:1, amber:0, green:4} },
+  },
+  {
+    id:'q5', type:'quad',
+    title: '이 공간에서 주로 무엇을 하나요?',
+    hint: '공간의 주된 용도',
+    choices: [
+      { icon:'😴', kw:'휴식 · 수면', desc:'피로를 풀고 편안하게 쉬는 공간',
+        score:{fresh:0, floral:3, woody:2, amber:4, green:1} },
+      { icon:'💻', kw:'집중 · 작업', desc:'공부·업무·창작에 집중하는 공간',
+        score:{fresh:4, floral:0, woody:3, amber:1, green:3} },
+      { icon:'🥂', kw:'대화 · 모임', desc:'손님을 맞이하고 함께 시간을 보내는',
+        score:{fresh:2, floral:3, woody:2, amber:3, green:1} },
+      { icon:'🧘', kw:'명상 · 힐링', desc:'고요하게 마음을 가라앉히는 공간',
+        score:{fresh:1, floral:1, woody:3, amber:3, green:4} },
+    ]
+  },
+  {
+    id:'q6', type:'ab',
+    title: '이 공간에 어울리는 영화 장르는?',
+    hint: '공간이 가진 감성적 분위기',
+    A: { icon:'🌹', kw:'로맨스 · 드라마', desc:'감성적이고 따뜻한 이야기', ex:'로맨스 · 멜로 · 가족 · 힐링 영화',
+         score:{fresh:0, floral:4, woody:1, amber:4, green:0} },
+    B: { icon:'🌿', kw:'자연 · 미스터리', desc:'깊이 있고 탐구적인 이야기', ex:'다큐 · 자연 · 스릴러 · SF',
+         score:{fresh:3, floral:0, woody:4, amber:2, green:4} },
+  },
+  {
+    id:'q7', type:'quad',
+    title: '이 공간에서 듣고 싶은 음악은?',
+    hint: '공간의 리듬과 분위기',
+    choices: [
+      { icon:'🎸', kw:'인디 · 포크', desc:'어쿠스틱 기타, 소박하고 진정성있는',
+        score:{fresh:2, floral:1, woody:4, amber:2, green:4} },
+      { icon:'🎤', kw:'발라드 · R&B', desc:'감성적이고 달콤한 멜로디',
+        score:{fresh:0, floral:4, woody:1, amber:4, green:0} },
+      { icon:'🎷', kw:'재즈 · 클래식', desc:'세련되고 여유로운 깊이',
+        score:{fresh:1, floral:2, woody:4, amber:4, green:1} },
+      { icon:'🌟', kw:'팝 · 일렉트로닉', desc:'밝고 에너지 넘치는',
+        score:{fresh:4, floral:3, woody:0, amber:0, green:3} },
+    ]
+  },
+  {
+    id:'q8', type:'scale',
+    title: '향의 강도는 어느 정도를 원하시나요?',
+    hint: '공간에 남기고 싶은 향의 무게감',
+    nodes: [
+      {label:'은은하게', score:{fresh:2, floral:2, woody:1, amber:1, green:2}},
+      {label:'가볍게',   score:{fresh:2, floral:2, woody:1, amber:1, green:2}},
+      {label:'적당히',   score:{fresh:1, floral:1, woody:2, amber:2, green:1}},
+      {label:'뚜렷하게', score:{fresh:0, floral:1, woody:3, amber:3, green:0}},
+      {label:'강하게',   score:{fresh:0, floral:0, woody:3, amber:4, green:0}},
+    ],
+    left:'은은하게', right:'강하게',
+  },
+];
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let state = {
+  qIdx: 0,
+  answers: {},   // {qId: score_object}
+  answerLabels: {}, // {qId: label}
+  recipe: null,
+  picked: [],
+  blends: {},
+  tab: 'pick',
+};
+
+// ════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  const el = document.getElementById(id);
+  el.classList.remove('hidden');
+  el.style.animation = 'none'; el.offsetHeight; el.style.animation = '';
+  el.scrollTop = 0;
+}
+
+function reset() {
+  state = {qIdx:0, answers:{}, answerLabels:{}, recipe:null, picked:[], blends:{}, tab:'pick'};
+  goTo('s-land');
+}
+
+// ════════════════════════════════════════
+// QUIZ
+// ════════════════════════════════════════
+function startQuiz() { state.qIdx = 0; renderQ(); }
+
+function renderQ() {
+  const q = QUESTIONS[state.qIdx];
+  const total = QUESTIONS.length;
+
+  // 도트
+  const dots = document.getElementById('q-dots');
+  dots.innerHTML = '';
+  for(let i=0;i<total;i++) {
+    const d = document.createElement('div');
+    d.className = 'q-dot ' + (i < state.qIdx ? 'done' : i === state.qIdx ? 'now' : 'idle');
+    dots.appendChild(d);
+  }
+
+  // 헤더
+  document.getElementById('q-num').textContent = `Q${state.qIdx+1} / ${total}`;
+  document.getElementById('q-title').textContent = q.title;
+  document.getElementById('q-hint').textContent = q.hint;
+  document.getElementById('q-back').style.display = state.qIdx === 0 ? 'none' : '';
+
+  // 이미 답했으면 선택 복원용
+  const prev = state.answers[q.id];
+
+  // 선택 영역
+  const wrap = document.getElementById('choice-wrap');
+  wrap.innerHTML = '';
+  wrap.style.animation = 'slideNext .3s ease both';
+
+  if(q.type === 'ab') renderAB(q, wrap, prev);
+  else if(q.type === 'quad') renderQuad(q, wrap, prev);
+  else if(q.type === 'scale') renderScale(q, wrap, prev);
+
+  // 다음 버튼
+  const btn = document.getElementById('q-next');
+  if(prev) {
+    btn.className = 'btn-g';
+    btn.textContent = state.qIdx < total-1 ? '다음 →' : '나의 향 찾기 →';
+  } else {
+    btn.className = 'btn-dim';
+    btn.textContent = '선택해주세요';
+  }
+}
+
+// A/B 카드
+function renderAB(q, wrap, prev) {
+  const grid = document.createElement('div'); grid.className = 'ab-cards';
+  ['A','B'].forEach((key, ki) => {
+    const ch = q[key];
+    const isPrev = prev && JSON.stringify(prev) === JSON.stringify(ch.score);
+    const fm = getFamColor(ch.score);
+    const card = document.createElement('div');
+    card.className = 'ab-card' + (isPrev?' picked':'');
+    card.style.animationDelay = ki * .08 + 's';
+    if(isPrev) { card.style.borderColor = fm.c; card.style.background = fm.bg; }
+    card.innerHTML = `
+      <div class="ab-check" style="background:${fm.c}">✓</div>
+      <span class="ab-icon">${ch.icon}</span>
+      <div class="ab-kw" style="color:${isPrev?fm.c:'var(--cr2)'}">${ch.kw}</div>
+      <div class="ab-desc">${ch.desc}</div>
+      <div class="ab-ex">${ch.ex}</div>`;
+    card.onclick = () => pickAB(q, key, card, grid, ch.score, fm, `${ch.icon} ${ch.kw}`);
+    grid.appendChild(card);
+  });
+  wrap.appendChild(grid);
+}
+
+function pickAB(q, key, card, grid, score, fm, label) {
+  grid.querySelectorAll('.ab-card').forEach(c => {
+    c.classList.remove('picked');
+    c.style.borderColor=''; c.style.background='';
+    c.querySelector('.ab-kw').style.color='var(--cr2)';
+  });
+  card.classList.add('picked');
+  card.style.borderColor = fm.c; card.style.background = fm.bg;
+  card.querySelector('.ab-kw').style.color = fm.c;
+  saveAnswer(q.id, score, label);
+}
+
+// 4지 선택
+function renderQuad(q, wrap, prev) {
+  const grid = document.createElement('div'); grid.className = 'quad-cards';
+  q.choices.forEach((ch, ci) => {
+    const isPrev = prev && JSON.stringify(prev) === JSON.stringify(ch.score);
+    const fm = getFamColor(ch.score);
+    const card = document.createElement('div');
+    card.className = 'q4-card' + (isPrev?' picked':'');
+    card.style.animationDelay = ci * .07 + 's';
+    if(isPrev) { card.style.borderColor = fm.c; card.style.background = fm.bg; }
+    card.innerHTML = `
+      <div class="ab-check" style="background:${fm.c}">✓</div>
+      <div class="q4-icon">${ch.icon}</div>
+      <div class="q4-kw" style="color:${isPrev?fm.c:'var(--cr2)'}">${ch.kw}</div>
+      <div class="q4-desc">${ch.desc}</div>`;
+    card.onclick = () => pickQuad(q, card, grid, ch.score, fm, `${ch.icon} ${ch.kw}`);
+    grid.appendChild(card);
+  });
+  wrap.appendChild(grid);
+}
+
+function pickQuad(q, card, grid, score, fm, label) {
+  grid.querySelectorAll('.q4-card').forEach(c => {
+    c.classList.remove('picked');
+    c.style.borderColor=''; c.style.background='';
+    c.querySelector('.q4-kw').style.color='var(--cr2)';
+  });
+  card.classList.add('picked');
+  card.style.borderColor = fm.c; card.style.background = fm.bg;
+  card.querySelector('.q4-kw').style.color = fm.c;
+  saveAnswer(q.id, score, label);
+}
+
+// 스케일
+function renderScale(q, wrap, prev) {
+  const sw = document.createElement('div'); sw.className = 'scale-wrap';
+  let sel = prev ? q.nodes.findIndex(n => JSON.stringify(n.score) === JSON.stringify(prev)) : -1;
+  if(sel < 0) sel = -1;
+
+  const labels = document.createElement('div'); labels.className = 'scale-labels';
+  labels.innerHTML = `<span class="scale-label">${q.left}</span><span class="scale-label">${q.right}</span>`;
+  sw.appendChild(labels);
+
+  const track = document.createElement('div'); track.className = 'scale-track';
+  const bar = document.createElement('div'); bar.className = 'scale-bar';
+  const nodes = document.createElement('div'); nodes.className = 'scale-nodes';
+
+  q.nodes.forEach((n, i) => {
+    const nd = document.createElement('div');
+    nd.className = 's-node' + (i === sel ? ' on' : '');
+    if(i === sel) nd.style.background = getNodeColor(i, q.nodes.length);
+    nd.onclick = () => pickScale(q, i, nodes, sw, q.nodes);
+    nodes.appendChild(nd);
+  });
+  bar.appendChild(nodes);
+  track.appendChild(bar);
+  sw.appendChild(track);
+
+  const desc = document.createElement('div'); desc.className = 'scale-desc'; desc.id = 'scale-desc';
+  desc.textContent = sel >= 0 ? q.nodes[sel].label : '';
+  sw.appendChild(desc);
+
+  wrap.appendChild(sw);
+}
+
+function pickScale(q, idx, nodesEl, sw, nodes) {
+  nodesEl.querySelectorAll('.s-node').forEach((nd, i) => {
+    nd.classList.toggle('on', i === idx);
+    nd.style.background = i === idx ? getNodeColor(idx, nodes.length) : '';
+  });
+  document.getElementById('scale-desc').textContent = nodes[idx].label;
+  saveAnswer(q.id, nodes[idx].score, nodes[idx].label);
+}
+
+function getNodeColor(i, total) {
+  const t = i / (total-1);
+  // 0=fresh(green), 0.5=gold, 1=amber(warm)
+  if(t < 0.5) return `hsl(${160-t*60},60%,45%)`;
+  return `hsl(${130-t*100},65%,45%)`;
+}
+
+// 공통: 답 저장 후 다음버튼 활성
+function saveAnswer(qId, score, label) {
+  state.answers[qId] = score;
+  state.answerLabels[qId] = label;
+  const total = QUESTIONS.length;
+  const btn = document.getElementById('q-next');
+  btn.className = 'btn-g';
+  btn.textContent = state.qIdx < total-1 ? '다음 →' : '나의 향 찾기 →';
+}
+
+// 패밀리 색상 (점수 최고값 패밀리)
+function getFamColor(score) {
+  const top = Object.entries(score).sort((a,b)=>b[1]-a[1])[0][0];
+  return FAM[top];
+}
+
+function prevQ() {
+  if(state.qIdx > 0) { state.qIdx--; renderQ(); }
+}
+
+function nextQ() {
+  const q = QUESTIONS[state.qIdx];
+  if(!state.answers[q.id]) return;
+  if(state.qIdx < QUESTIONS.length-1) {
+    state.qIdx++;
+    renderQ();
+    document.getElementById('s-quiz').scrollTop = 0;
+  } else {
+    runEngine();
+  }
+}
+
+// ════════════════════════════════════════
+// ENGINE — 답변 점수 합산
+// ════════════════════════════════════════
+function runEngine() {
+  const fams = ['fresh','floral','woody','amber','green'];
+  const total = {};
+  fams.forEach(f => total[f] = 0);
+
+  QUESTIONS.forEach(q => {
+    const ans = state.answers[q.id];
+    if(!ans) return;
+    fams.forEach(f => { total[f] += (ans[f]||0); });
+  });
+
+  const sorted = fams.slice().sort((a,b) => total[b]-total[a]);
+  const max = total[sorted[0]] || 1;
+  const norm = {};
+  fams.forEach(f => { norm[f] = Math.round((total[f]/max)*100); });
+
+  // 추천 향료
+  const top2 = sorted.slice(0,2);
+  const recs = [];
+  ['top','mid','base'].forEach(nt => {
+    top2.forEach(fam => {
+      const matches = FRAGS.filter(f => f.f===fam && f.nt===nt);
+      matches.slice(0,2).forEach(m => { if(!recs.find(r=>r.id===m.id) && recs.length<7) recs.push(m); });
+    });
+  });
+
+  state.recipe = {scores:norm, sorted, recs:recs.slice(0,6), topFam:sorted[0], secondFam:sorted[1]};
+  state.picked = state.recipe.recs.slice(0,4).map(f=>f.id);
+  const b = {};
+  state.picked.forEach((id,i) => { b[id] = i===0?27:i===1?26:i===2?25:22; });
+  state.blends = b;
+  buildResult();
+  goTo('s-res');
+}
+
+// ════════════════════════════════════════
+// RESULT
+// ════════════════════════════════════════
+function buildResult() {
+  const r = state.recipe;
+  // 패밀리 배지
+  const rf = document.getElementById('res-fams');
+  rf.innerHTML = '';
+  r.sorted.slice(0,2).forEach((f,i) => {
+    const m = FAM[f];
+    if(i>0){const sp=document.createElement('span');sp.textContent='+';sp.style.cssText='color:#3A4A3A;font-size:16px';rf.appendChild(sp);}
+    const span = document.createElement('span');
+    span.style.cssText = `font-size:${i===0?22:18}px;font-weight:300;color:${m.c};font-style:italic`;
+    span.textContent = `${m.e} ${m.l}`;
+    rf.appendChild(span);
+  });
+  // 태그: 답변 레이블
+  const rt = document.getElementById('res-tags');
+  rt.innerHTML = '';
+  Object.values(state.answerLabels).forEach(label => {
+    const span = document.createElement('span');
+    span.className = 'res-tag';
+    span.textContent = label;
+    rt.appendChild(span);
+  });
+  // 점수 바
+  const sr = document.getElementById('score-row');
+  sr.innerHTML = '';
+  Object.entries(r.scores).sort((a,b)=>b[1]-a[1]).forEach(([f,s]) => {
+    const div = document.createElement('div');
+    div.className = 'sc-bar';
+    div.style.cssText = `flex:${s};background:${FAM[f].c};opacity:${s/100+.15}`;
+    sr.appendChild(div);
+  });
+  state.tab = 'pick';
+  renderPickPanel();
+  renderBlendPanel();
+  updateBottomBar();
+}
+
+function renderPickPanel() {
+  const pp = document.getElementById('panel-pick');
+  pp.innerHTML = '';
+  const recIds = state.recipe.recs.map(r=>r.id);
+  ['top','mid','base'].forEach(nt => {
+    const sec = document.createElement('div'); sec.className = 'note-sec';
+    const hd = document.createElement('div'); hd.className = `note-hd ${nt}`; hd.textContent = NOTE_L[nt];
+    sec.appendChild(hd);
+    const row = document.createElement('div'); row.className = 'fc-row';
+    FRAGS.filter(f=>f.nt===nt).forEach(f => {
+      const isPicked = state.picked.includes(f.id);
+      const isRec = recIds.includes(f.id);
+      const fm = FAM[f.f];
+      const d = document.createElement('div');
+      d.className = 'fc'+(isPicked?' on':'')+(isRec&&!isPicked?' rec':'');
+      d.id = 'fc-'+f.id;
+      if(isPicked){d.style.borderColor=fm.c;d.style.background=fm.bg;}
+      d.innerHTML = `<div class="rec-dot"></div><span class="fn" style="color:${isPicked?fm.c:'var(--cr2)'}">${f.n}</span><span class="fd">${f.d}</span>${isPicked?`<span class="fcheck" style="color:${fm.c};font-size:10px;font-weight:800;margin-left:2px">✓</span>`:''}`;
+      d.onclick = () => toggleFrag(f.id);
+      row.appendChild(d);
+    });
+    sec.appendChild(row);
+    pp.appendChild(sec);
+  });
+  const sp = document.createElement('div'); sp.style.height='7rem'; pp.appendChild(sp);
+  updatePickCount();
+}
+
+function toggleFrag(id) {
+  if(state.picked.includes(id)){
+    if(state.picked.length<=2) return;
+    state.picked = state.picked.filter(x=>x!==id);
+    const b={...state.blends}; delete b[id]; state.blends=b;
+  } else {
+    if(state.picked.length>=6) return;
+    state.picked.push(id); state.blends[id]=0;
+  }
+  const recIds = state.recipe.recs.map(r=>r.id);
+  FRAGS.forEach(f => {
+    const el = document.getElementById('fc-'+f.id); if(!el) return;
+    const isPicked = state.picked.includes(f.id);
+    const isRec = recIds.includes(f.id);
+    const fm = FAM[f.f];
+    el.className = 'fc'+(isPicked?' on':'')+(isRec&&!isPicked?' rec':'');
+    el.style.borderColor = isPicked?fm.c:'';
+    el.style.background = isPicked?fm.bg:'';
+    el.innerHTML = `<div class="rec-dot"></div><span class="fn" style="color:${isPicked?fm.c:'var(--cr2)'}">${f.n}</span><span class="fd">${f.d}</span>${isPicked?`<span style="color:${fm.c};font-size:10px;font-weight:800;margin-left:2px">✓</span>`:''}`;
+  });
+  updatePickCount(); updateBottomBar();
+}
+
+function updatePickCount(){document.getElementById('pick-cnt').textContent=`(${state.picked.length}/6)`;}
+
+function renderBlendPanel() {
+  const bp = document.getElementById('panel-blend'); bp.innerHTML='';
+  const tot = calcTotal();
+  const tcol = tot===100?'var(--A)':tot>100?'#CF4A4A':'var(--gold)';
+  const hd = document.createElement('div'); hd.className='bl-hd';
+  hd.innerHTML = `<div><span class="bl-total" style="color:${tcol}">${tot}%</span><span style="font-size:13px;color:var(--cr3);margin-left:8px">/ 100%</span></div><button onclick="autoBalance()" style="padding:8px 16px;font-size:12px;letter-spacing:.06em;background:rgba(200,162,90,.1);border:1px solid rgba(200,162,90,.25);color:var(--gold);border-radius:2px;cursor:pointer;font-family:inherit">균등 조정</button>`;
+  bp.appendChild(hd);
+  const sb = document.createElement('div'); sb.className='bl-stack'; sb.id='bl-stack'; renderStack(sb); bp.appendChild(sb);
+  state.picked.forEach(id => {
+    const f=FRAGS.find(x=>x.id===id); if(!f) return;
+    const fm=FAM[f.f]; const v=state.blends[id]||0;
+    const item=document.createElement('div'); item.className='bl-item'; item.id='bli-'+id;
+    item.innerHTML=`
+      <div class="bl-it-top">
+        <div>
+          <div class="bl-name">${f.n}</div>
+          <div class="bl-meta">
+            <span class="fam-mini" style="background:${fm.bg};color:${fm.c}">${fm.e} ${fm.l}</span>
+            <span class="fam-mini" style="background:rgba(255,255,255,.05);color:var(--cr3)">${NOTE_L[f.nt].split(' — ')[0]}</span>
+          </div>
+        </div>
+        <div class="ctrl">
+          <button class="ctrl-btn" style="color:${fm.c};border-color:${fm.c}44" onclick="adjBlend(${id},-5)">−</button>
+          <div class="pct" style="color:${fm.c}">${v}<span style="font-size:11px">%</span></div>
+          <button class="ctrl-btn" style="color:${fm.c};border-color:${fm.c}44" onclick="adjBlend(${id},5)">+</button>
+        </div>
+      </div>
+      <input type="range" min="0" max="100" step="5" value="${v}" oninput="setBlend(${id},+this.value)" style="accent-color:${fm.c};background:linear-gradient(to right,${fm.c} ${v}%,rgba(255,255,255,.07) ${v}%)">
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:#3A4A3A;margin-top:3px"><span>0</span><span>25</span><span>50</span><span>75</span><span>100%</span></div>
+      <div class="bl-note">${f.nt==='top'?'🔺 탑 노트 — 처음 인상 · 10~20% 권장':f.nt==='mid'?'🔶 미들 노트 — 향의 개성 · 30~50% 권장':'🔵 베이스 노트 — 잔향 · 30~50% 권장'}</div>`;
+    bp.appendChild(item);
+  });
+  const sp=document.createElement('div');sp.className='bl-sp';bp.appendChild(sp);
+  updateBlendTab();
+}
+
+function renderStack(sb) {
+  if(!sb) sb=document.getElementById('bl-stack'); if(!sb) return;
+  sb.innerHTML='';
+  state.picked.forEach(id => {
+    const f=FRAGS.find(x=>x.id===id); if(!f) return;
+    const v=state.blends[id]||0; if(v<=0) return;
+    const div=document.createElement('div');
+    div.style.cssText=`flex:${v};background:${FAM[f.f].c};transition:flex .2s`;
+    sb.appendChild(div);
+  });
+  const tot=calcTotal();
+  if(tot<100){const div=document.createElement('div');div.style.cssText=`flex:${100-tot};background:rgba(255,255,255,.05)`;sb.appendChild(div);}
+}
+
+function refreshBlendItem(id) {
+  const f=FRAGS.find(x=>x.id===id);if(!f)return;
+  const fm=FAM[f.f];const v=state.blends[id]||0;
+  const el=document.getElementById('bli-'+id);if(!el)return;
+  const pct=el.querySelector('.pct');
+  const rng=el.querySelector('input');
+  if(pct)pct.innerHTML=`${v}<span style="font-size:11px">%</span>`;
+  if(rng){rng.value=v;rng.style.background=`linear-gradient(to right,${fm.c} ${v}%,rgba(255,255,255,.07) ${v}%)`;}
+  const tot=calcTotal();
+  const hdPct=document.querySelector('.bl-total');
+  if(hdPct){const tc=tot===100?'var(--A)':tot>100?'#CF4A4A':'var(--gold)';hdPct.style.color=tc;hdPct.textContent=tot+'%';}
+  renderStack();updateBlendTab();updateBottomBar();
+}
+
+function setBlend(id,v){state.blends[id]=Math.max(0,Math.min(100,v));refreshBlendItem(id);}
+function adjBlend(id,d){setBlend(id,(state.blends[id]||0)+d);}
+function calcTotal(){return Object.values(state.blends).reduce((s,v)=>s+v,0);}
+
+function autoBalance(){
+  const ids=state.picked;const even=Math.floor(100/ids.length);const rem=100-even*ids.length;
+  ids.forEach((id,i)=>{state.blends[id]=even+(i===0?rem:0);});
+  renderBlendPanel();updateBottomBar();
+}
+
+function updateBlendTab(){const tot=calcTotal();const ok=Math.abs(tot-100)<=1;document.getElementById('blend-tot-tab').textContent=ok?'✓':tot+'%';}
+
+function updateBottomBar(){
+  const bot=document.getElementById('res-bot');const tot=calcTotal();const ok=Math.abs(tot-100)<=1;
+  if(state.tab==='pick'){
+    const can=state.picked.length>=2;
+    bot.innerHTML=`<button class="${can?'btn-g':'btn-dim'}" onclick="${can?"goBlend()":"''"}">
+      ${can?`배합비 설정하기 (${state.picked.length}종) →`:'최소 2종 이상 선택해주세요'}</button>`;
+  } else {
+    bot.innerHTML=`<div style="display:flex;gap:8px;width:100%">
+      <button class="btn-gh" onclick="switchTab('pick')" style="padding:16px 18px">← 향료 변경</button>
+      <button class="${ok?'btn-gr':'btn-dim'}" style="flex:1" onclick="${ok?'finalize()':'null'}">
+        ${ok?'✓ 레시피 완성 · 주문하기':'합계를 100%로 맞춰주세요'}</button>
+    </div>`;
+  }
+}
+
+function switchTab(t){
+  state.tab=t;
+  document.getElementById('tab-pick').className='r-tab'+(t==='pick'?' on':'');
+  document.getElementById('tab-blend').className='r-tab'+(t==='blend'?' on':'');
+  document.getElementById('panel-pick').style.display=t==='pick'?'':'none';
+  const bp=document.getElementById('panel-blend');
+  if(t==='blend'){bp.style.display='';renderBlendPanel();}else bp.style.display='none';
+  updateBottomBar();
+}
+
+function goBlend(){autoBalance();switchTab('blend');document.getElementById('s-res').scrollTop=0;}
+
+function finalize(){
+  const rc=document.getElementById('done-recipe');
+  const sel=state.picked.map(id=>{const f=FRAGS.find(x=>x.id===id);return{f,v:state.blends[id]||0};}).sort((a,b)=>b.v-a.v);
+  _lastRecipe = sel;  // 이메일 전송용 캐시
+
+  // 이메일 입력창 초기화
+  const emailInput = document.getElementById('user-email');
+  const emailStatus = document.getElementById('email-status');
+  const sendBtn = document.getElementById('send-btn');
+  if(emailInput) emailInput.value = '';
+  if(emailStatus) emailStatus.textContent = '';
+  if(sendBtn){ sendBtn.textContent='전송'; sendBtn.style.opacity='1'; sendBtn.disabled=false; sendBtn.style.background='linear-gradient(135deg,#C8A25A,#A87840)'; sendBtn.style.color='#0C1810'; }
+
+  const topFm = FAM[state.recipe.topFam];
+  document.getElementById('done-ring').style.cssText=`width:110px;height:110px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:44px;margin-bottom:26px;animation:glow 2.2s ease infinite;background:${topFm.bg};border:2px solid ${topFm.c}`;
+  rc.innerHTML=`<div class="rc-title">나의 향 배합 레시피</div>`+
+    sel.map(({f,v})=>{const fm=FAM[f.f];return`<div class="rc-row"><div class="rc-name">${fm.e} ${f.n}<span style="font-size:11px;color:var(--cr3);margin-left:6px">${f.d}</span></div><div class="rc-pct" style="color:${fm.c}">${v}%</div></div>`;}).join('');
+  goTo('s-done');
+}
+
+goTo('s-land');
+</script>
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+// ════════════════════════════════════════
+// EmailJS 설정
+// ★ 아래 3개 값을 EmailJS 계정에서 발급받은 값으로 교체하세요
+// ════════════════════════════════════════
+const EJS = {
+  publicKey:  'mrzMd2EUtJ-4JTrRv',
+  serviceId:  'service_pcre2bu',
+  templateId: 'template_891smi',
+};
+emailjs.init({ publicKey: EJS.publicKey });
+
+// 현재 레시피 캐시 (finalize에서 저장)
+let _lastRecipe = null;
+
+function sendEmail() {
+  const userEmail = document.getElementById('user-email').value.trim();
+  const status    = document.getElementById('email-status');
+  const btn       = document.getElementById('send-btn');
+
+  if(!_lastRecipe) return;
+
+  // 이메일 형식 검증
+  if(userEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
+    status.style.color = '#CF4A4A';
+    status.textContent = '올바른 이메일 주소를 입력해주세요';
+    return;
+  }
+
+  btn.textContent = '전송 중...';
+  btn.style.opacity = '.6';
+  btn.disabled = true;
+
+  // 전송 데이터 구성
+  const now     = new Date();
+  const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const answers = Object.values(state.answerLabels).join(' / ');
+  const recipe  = _lastRecipe.map(({f,v}) => `${FAM[f.f].e} ${f.n} ${v}%`).join('\n');
+  const topFams = `${FAM[state.recipe.topFam].l} + ${FAM[state.recipe.secondFam].l}`;
+
+  const templateParams = {
+    to_email:     'flatcoop24@gmail.com',   // 에이쿠드 수신 이메일 (고정)
+    reply_to:     userEmail || '(미입력)',
+    user_email:   userEmail || '(미입력)',
+    date:         dateStr,
+    answers:      answers,
+    top_families: topFams,
+    recipe_text:  recipe,
+    recipe_html:  _lastRecipe.map(({f,v}) => `<tr><td style="padding:6px 12px;font-size:14px">${FAM[f.f].e} ${f.n}<span style="font-size:11px;color:#999;margin-left:6px">${f.d}</span></td><td style="padding:6px 12px;font-size:16px;font-weight:500;color:${FAM[f.f].c};text-align:right">${v}%</td></tr>`).join(''),
+  };
+
+  emailjs.send(EJS.serviceId, EJS.templateId, templateParams)
+    .then(() => {
+      status.style.color = '#2A9970';
+      status.textContent = userEmail
+        ? `✓ ${userEmail} 로 레시피를 전송했습니다`
+        : '✓ 레시피가 에이쿠드로 전달되었습니다';
+      btn.textContent = '전송 완료 ✓';
+      btn.style.background = 'linear-gradient(135deg,#2A9970,#1A7050)';
+      btn.style.color = '#fff';
+    })
+    .catch(err => {
+      console.error(err);
+      status.style.color = '#CF4A4A';
+      status.textContent = '전송 실패 — EmailJS 설정을 확인해주세요';
+      btn.textContent = '전송';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    });
+}
+</script>
+</body>
+</html>
